@@ -1,0 +1,90 @@
+*{
+    margin: 0;
+    padding: 0;
+}
+
+.calc{
+    background: rgb(0, 0, 0);
+    height: 450px;
+    width: 700px;
+    border-radius: 15px;
+    margin: 50px auto;
+    color: white;
+}
+
+.light{
+    background: rgb(119 166 242);
+}
+
+.calc__input{
+    font-size: 50px;
+    height: 90px;
+}
+
+.history{
+    font-size: 35px;
+    filter: brightness(50%);
+    height: 40px;
+}
+
+.buttons{
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    grid-template-rows: repeat(5, 1fr);
+    grid-auto-rows: 100px;
+}
+
+.buttons button:nth-child(25){
+    grid-column-start: 1;
+    grid-column-end: 5;
+}
+
+.buttons button:nth-child(30){
+    grid-column-start: 1;
+    grid-column-end: 5;
+}
+
+.buttons button:nth-child(31){
+    grid-column-start: 5;
+    grid-column-end: 7;
+}
+
+.btn{
+    height: 60px;
+    background: gray;
+    text-align: center;
+    font-size: 1.5rem;
+    border: 2px solid;
+    cursor: pointer;
+    user-select: none;
+    text-decoration: none;
+}
+
+.light .btn{
+    background: rgb(123 145 201);
+    border: 2px rgb(119 166 242) solid;
+}
+
+.btn:hover{
+    filter: brightness(150%);
+}
+
+.btn:active{
+    filter: brightness(50%);
+}
+
+.digit{
+    background: rgb(78, 76, 76);
+}
+
+.light .digit{
+    background: rgb(91 117 193);
+}
+
+.equals{
+    background: rgb(255, 37, 37);
+}
+
+.light .equals{
+    background: rgb(255, 0, 0);
+}
