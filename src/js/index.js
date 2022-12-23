@@ -15,194 +15,150 @@ import {
     PowerTenCommand, 
     DivisionOneCommand
 } from './operations/operations.js';
+
 import '/src/css/calculator.css';
+import { operationListener } from './functions/operationListener.js';
+import { digitListener } from './functions/digitListener.js';
+import { equalListener } from './functions/equalListener.js';
+import { changeSignListener } from './functions/changeSignListener.js';
+import { dotListener } from './functions/dotListener.js';
+import { memoryListener } from './functions/memoryListener.js';
 
-const btns = document.querySelector('.buttons'),
-      outputString = document.querySelector('.input'), 
-      history = document.querySelector('.history');
-   
-let firstOperand = '';
-let secondOperand = '';
-let result = null;
-let operationName = '';
-let lastOperation = '';
-let dotCheck = false;
-let errorCheck = false;
-let memoryOperand = '';
-let calc = new Calculator();
-let memory = new Calculator();
+export const outputString = document.querySelector('.input');
+export const history = document.querySelector('.history');
 
-function clearAll(){
-    firstOperand = '';
-    secondOperand = '';
-    result = null;
-    operationName = '';
-    lastOperation = '';
-    dotCheck = false;
-    errorCheck = false;
-    calc = new Calculator();
-    memory = new Calculator();
-    outputString.textContent = '';
-    history.textContent = '';
-}
+const operationButtons = document.querySelectorAll('.operation');
+const digitButtons = document.querySelectorAll('.digit');
+const equalButton = document.querySelector('.equals');
+const changeSignButton = document.querySelector('.change-sign');
+const dotButton = document.querySelector('.dot');
+const clearButton = document.querySelector('.clear');
+const memoryButtons = document.querySelectorAll('.memory');
+const themeButton = document.querySelector('.theme');
 
-btns.addEventListener('click', (event) => {
-    const value = event.target;
-    
-    if (value.classList.contains('digit')){
-        if (errorCheck) {
-            clearAll();
-        }
-        firstOperand += value.textContent;
-        outputString.textContent = firstOperand;
-    }
+let calcState = {
+    firstOperand : '',
+    secondOperand : '',
+    result : null,
+    operationName : '',
+    lastOperation : '',
+    dotCheck : false,
+    errorCheck : false,
+    memoryOperand : '',
+    calc : new Calculator(),
+    memory : new Calculator()
+};
 
-    if (value.classList.contains('change-sign')){
-        if (!outputString.textContent) return;
-        outputString.textContent *= -1;   
-        firstOperand = outputString.textContent;  
-    }
-
-    if (value.classList.contains('dot') && !dotCheck){
-        dotCheck = true;
-        firstOperand += value.textContent;
-        outputString.textContent = firstOperand;
-    }
-
-    if (value.classList.contains('operation')){
-        if (calc.value != 0 && firstOperand && !secondOperand){
-            calc.value = 0;
-        }
-        if (errorCheck) {
-            clearAll();
-        }
-        operationName = value.textContent;
-        if (!secondOperand){
-            calc.executeCommand(new AddCommand(+firstOperand));
-        } else {
-            firstOperand = mathOperation(lastOperation);
-            outputString.textContent = calc.value;
-            history.textContent = '';
-        }
-        clearOperation(operationName);
-        lastOperation = operationName;
-        console.log("calc value: "+ calc.value);
-        dotCheck = false;
-    }
-
-    if (value.classList.contains('clear')){
-        clearAll();
-    }
-
-    if (value.classList.contains('equals')){
-        if (errorCheck) {
-            clearAll();
-        }
-        if (!firstOperand && !secondOperand) return;
-        calc.value = mathOperation();
-        clearOperation();
-        if (isFinite(calc.value)) {
-            outputString.textContent = calc.value;
-        } else {
-            outputString.textContent = 'Error, division by zero';
-            errorCheck = true;
-        }
-        history.textContent = '';
-        firstOperand = '';
-        secondOperand = '';
-        dotCheck = false;
-    }
-
-    if (value.classList.contains('MR')){
-        if (!memory.value) return;
-        if (firstOperand || secondOperand) clearOperation();
-        outputString.textContent = memory.value;
-        firstOperand = memory.value;
-    }
-
-    if (value.classList.contains('MC')){
-        firstOperand = '';
-        calc.value = 0;
-        if (!memory.value) return;
-        memory.value = 0;
-        outputString.textContent = '';
-        calc.value = 0;
-    }
-
-    if (value.classList.contains('M+')){
-        firstOperand = '';
-        calc.value = 0;
-        memoryOperand = outputString.textContent;
-        memory.executeCommand(new AddCommand(+memoryOperand));
-        outputString.textContent = '';
-        memoryOperand = ''; 
-    }
-
-    if (value.classList.contains('M-')){
-        firstOperand = '';
-        calc.value = 0;
-        memoryOperand = outputString.textContent;
-        memory.executeCommand(new SubtractCommand(+memoryOperand));
-        outputString.textContent = ''; 
-        memoryOperand = '';
-    }
-
-    if (value.classList.contains('theme')){
-        document.querySelector('.calc').classList.toggle('light');
-        document.querySelector('.digit').classList.toggle('light');
-        document.querySelector('.btn').classList.toggle('light');
-        document.querySelector('.equals').classList.toggle('light');
-    }
-   
+operationButtons.forEach(operationButton => {
+    operationButton.addEventListener('click', (event) => {
+        operationListener(event, calcState);
+    });
 });
 
-function clearOperation(operName = ''){
-    if (!firstOperand) {
-        firstOperand = outputString.textContent;
-        outputString.textContent = '';
-    } else {
-        secondOperand = firstOperand;
-        outputString.textContent = '';
-    }
-    firstOperand += ' ' + operName;
-    secondOperand = firstOperand;
-    history.textContent = firstOperand;
-    firstOperand = '';
+digitButtons.forEach(digitButton => {
+    digitButton.addEventListener('click', (event) => {
+        digitListener(event, calcState);
+    });
+});
+
+equalButton.addEventListener('click', (event) => {
+    equalListener(event, calcState);
+});
+
+changeSignButton.addEventListener('click', (event) => {
+    changeSignListener(event, calcState);
+});
+
+dotButton.addEventListener('click', (event) => {
+    dotListener(event, calcState);
+});
+
+clearButton.addEventListener('click', () => {
+    clearAll();
+});
+
+memoryButtons.forEach(memoryButton => {
+    memoryButton.addEventListener('click', (event) => {
+        memoryListener(event, calcState);
+    });
+});
+
+themeButton.addEventListener('click', () => {
+    changeTheme();
+});
+
+function changeTheme(){
+    document.querySelector('.calc').classList.toggle('light');
+    document.querySelector('.digit').classList.toggle('light');
+    document.querySelector('.btn').classList.toggle('light');
+    document.querySelector('.equals').classList.toggle('light');
 }
 
-function mathOperation(){
-    switch(lastOperation){
+export function mathOperation(){
+    switch(calcState.lastOperation){
         case '+':
-            calc.executeCommand(new AddCommand(+firstOperand)); break;
+            calcState.calc.executeCommand(new AddCommand(+calcState.firstOperand)); break;
         case '-':
-            calc.executeCommand(new SubtractCommand(+firstOperand)); break;
+            calcState.calc.executeCommand(new SubtractCommand(+calcState.firstOperand)); break;
         case '*':
-            calc.executeCommand(new MultiplyCommand(+firstOperand)); break;
+            calcState.calc.executeCommand(new MultiplyCommand(+calcState.firstOperand)); break;
         case '/':
-            calc.executeCommand(new DivisionCommand(+firstOperand)); break;
+            calcState.calc.executeCommand(new DivisionCommand(+calcState.firstOperand)); break;
         case '%':
-            calc.executeCommand(new PercentCommand(+firstOperand)); break;            
+            calcState.calc.executeCommand(new PercentCommand(+calcState.firstOperand)); break;            
         case '^2':
-            calc.executeCommand(new SquaredCommand(+firstOperand)); break;
+            calcState.calc.executeCommand(new SquaredCommand(+calcState.firstOperand)); break;
         case '^3':
-            calc.executeCommand(new CubicCommand(+firstOperand)); break;
+            calcState.calc.executeCommand(new CubicCommand(+calcState.firstOperand)); break;
         case '^1/2':
-            calc.executeCommand(new SQRootCommand(+firstOperand)); break;
+            calcState.calc.executeCommand(new SQRootCommand(+calcState.firstOperand)); break;
         case '^1/3':
-            calc.executeCommand(new CBRootCommand(+firstOperand)); break;
+            calcState.calc.executeCommand(new CBRootCommand(+calcState.firstOperand)); break;
         case '^1/':
-            calc.executeCommand(new NRootCommand(+firstOperand)); break;        
+            calcState.calc.executeCommand(new NRootCommand(+calcState.firstOperand)); break;        
         case '!':
-            calc.executeCommand(new FactorialCommand(+firstOperand)); break;     
+            calcState.calc.executeCommand(new FactorialCommand(+calcState.firstOperand)); break;     
         case '^':
-            calc.executeCommand(new PowerCommand(+firstOperand)); break;  
+            calcState.calc.executeCommand(new PowerCommand(+calcState.firstOperand)); break;  
         case '10^':
-            calc.executeCommand(new PowerTenCommand(+firstOperand)); break;  
+            calcState.calc.executeCommand(new PowerTenCommand(+calcState.firstOperand)); break;  
         case '1/':
-            calc.executeCommand(new DivisionOneCommand(+firstOperand)); break;         
+            calcState.calc.executeCommand(new DivisionOneCommand(+calcState.firstOperand)); break;         
     }
-    result = calc.value;
-    return result;
+    calcState.result = calcState.calc.value;
+    return calcState.result;
+}
+
+export function clearOperation(operName = ''){
+    if (!calcState.firstOperand) {
+        calcState.firstOperand = outputString.textContent;
+        outputString.textContent = '';
+    } else {
+        calcState.secondOperand = calcState.firstOperand;
+        outputString.textContent = '';
+    }
+    calcState.firstOperand += ' ' + operName;
+    calcState.secondOperand = calcState.firstOperand;
+    history.textContent = calcState.firstOperand;
+    calcState.firstOperand = '';
+}
+
+export function clearAll(){
+    calcState = { 
+        ...calcState,
+        firstOperand : '',
+        secondOperand : '',
+        result : null,
+        operationName : '',
+        lastOperation : '',
+        dotCheck : false,
+        errorCheck : false,
+        memoryOperand : '',
+        calc : new Calculator(),
+        memory : new Calculator()
+    };
+    outputString.textContent = '';
+    history.textContent = '';
 }
 
 
